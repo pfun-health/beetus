@@ -1,0 +1,9 @@
+[project]
+name = "beetus"
+version = "0.1.0"
+description = "2D physio-generated platformer game."
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "pyxel>=2.5.10",
+]
