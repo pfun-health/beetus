@@ -2,15 +2,15 @@
 # generate.py : generate various dynamics, procedures by using the BeetusClient (pfun-cma-model)
 # #
 
-from typing import Literal
-from dataclasses import dataclass
+import logging
 
 from beetus.client import BeetusClient
+from beetus.params import PlatformParams
+from beetus.pieces import MovingPlatform, MovingWave
 from pfun_cma_model.engine.cma_model_params import CMAModelParams
 
-
-#: Signal type literals
-SignalType = Literal["c", "m", "a", "G"]
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 
 class PFunGenerator:
@@ -42,17 +42,9 @@ class PFunGenerator:
         pass
 
 
-@dataclass
-class PlatformParams:
-    """Parameters for generating a rectangular platform (width, height, x_offset, y_offset)."""
-    signal: SignalType = "c"
-    width: float = 100.0
-    height: float = 100.0
-    x_offset: float = 0.0
-    y_offset: float = 0.0
-
-
 class PFunPlatformGenerator(PFunGenerator):
+    """Generates a platform based on the PFun API response."""
+
     def __init__(self, model_params: CMAModelParams = None, platform_params: PlatformParams = None):
         super().__init__(model_params)
         self.platform_pieces = []
@@ -66,8 +58,10 @@ class PFunPlatformGenerator(PFunGenerator):
             logging.warning("No signal or time data found in API response")
             return
         for i in range(len(api_response.t)):
-            x = (api_response.t[i] * self.platform_params.width) + self.platform_params.x_offset
-            y = self.platform_params.y_offset - (api_response.c[i] * self.platform_params.height)
+            x = (api_response.t[i] * self.platform_params.width) + \
+                self.platform_params.x_offset
+            y = self.platform_params.y_offset - \
+                (api_response.c[i] * self.platform_params.height)
             self.platform_pieces.append(MovingPlatform(x, y))
 
     async def generate(self):
@@ -87,6 +81,8 @@ class PFunPlatformGenerator(PFunGenerator):
 
 
 class PFunWaveGenerator(PFunGenerator):
+    """Generates a wave based on the PFun API response."""
+
     def __init__(self, model_params: CMAModelParams = None):
         super().__init__(model_params)
         self.wave_pieces = []
@@ -95,23 +91,13 @@ class PFunWaveGenerator(PFunGenerator):
         """Generates a wave based on the PFun API response."""
         api_response = await self.query_pfun()
         # Process the API response to generate the wave
-        if hasattr(api_response, self.wave_params.signal) and hasattr(api_response, "t"):
-            for i in range(len(api_response.t)):
-                x = (api_response.t[i] * self.wave_params.width) + self.wave_params.x_offset
-                y = self.wave_params.y_offset - (api_response.c[i] * self.wave_params.height)
-                self.wave_pieces.append(MovingWave(x, y))
+        for i in range(len(api_response.t)):
+            x = (api_response.t[i] * self.wave_params.width) + \
+                self.wave_params.x_offset
+            y = self.wave_params.y_offset - \
+                (api_response.c[i] * self.wave_params.height)
+            self.wave_pieces.append(MovingWave(x, y))
 
     async def generate(self):
         """Generates a wave based on the PFun API response."""
         await self.generate_wave()
-
-    @property
-    def bbox(self):
-        """Returns the bounding box of the generated wave."""
-        if not self.wave_pieces:
-            return None
-        min_x = min(piece.x for piece in self.wave_pieces)
-        max_x = max(piece.x + piece.width for piece in self.wave_pieces)
-        min_y = min(piece.y for piece in self.wave_pieces)
-        max_y = max(piece.y + piece.height for piece in self.wave_pieces)
-        return (min_x, min_y, max_x, max_y)

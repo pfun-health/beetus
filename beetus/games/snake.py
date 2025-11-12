@@ -5,40 +5,11 @@
 # license: MIT
 # version: 1.0
 
-from collections import deque, namedtuple
+from collections import deque
 
 import pyxel
 
-Point = namedtuple("Point", ["x", "y"])  # Convenience class for coordinates
-
-
-#############
-# Constants #
-#############
-
-COL_BACKGROUND = 3
-COL_BODY = 11
-COL_HEAD = 7
-COL_DEATH = 8
-COL_APPLE = 8
-
-TEXT_DEATH = ["GAME OVER", "(Q)UIT", "(R)ESTART"]
-COL_TEXT_DEATH = 0
-HEIGHT_DEATH = 5
-
-WIDTH = 40
-HEIGHT = 50
-
-HEIGHT_SCORE = pyxel.FONT_HEIGHT
-COL_SCORE = 6
-COL_SCORE_BACKGROUND = 5
-
-UP = Point(0, -1)
-DOWN = Point(0, 1)
-RIGHT = Point(1, 0)
-LEFT = Point(-1, 0)
-
-START = Point(5, 5 + HEIGHT_SCORE)
+from beetus.params import SnakeParams, Point
 
 
 ###################
@@ -58,18 +29,19 @@ class Snake:
     def on_quit_callback(self):
         return self._on_quit_callback
 
-    def __init__(self, on_quit_callback = None):
+    def __init__(self, params: SnakeParams, on_quit_callback=dummy_method):
         """Initiate pyxel, set up initial game variables, and run."""
         self._on_quit_callback = on_quit_callback
+        self.params = params
         define_sound_and_music()
         self.reset()
         pyxel.run(self.update, self.draw)
 
     def reset(self):
         """Initiate key variables (direction, snake, apple, score, etc.)"""
-        self.direction = RIGHT
+        self.direction = self.params.right
         self.snake = deque()
-        self.snake.append(START)
+        self.snake.append(self.params.start)
         self.death = False
         self.score = 0
         self.generate_apple()
@@ -101,26 +73,27 @@ class Snake:
         """Watch the keys and change direction."""
 
         if pyxel.btn(pyxel.KEY_UP) or pyxel.btn(pyxel.GAMEPAD1_BUTTON_DPAD_UP):
-            if self.direction is not DOWN:
-                self.direction = UP
+            if self.direction is not self.params.down:
+                self.direction = self.params.up
 
         elif pyxel.btn(pyxel.KEY_DOWN) or pyxel.btn(pyxel.GAMEPAD1_BUTTON_DPAD_DOWN):
-            if self.direction is not UP:
-                self.direction = DOWN
+            if self.direction is not self.params.up:
+                self.direction = self.params.down
 
         elif pyxel.btn(pyxel.KEY_LEFT) or pyxel.btn(pyxel.GAMEPAD1_BUTTON_DPAD_LEFT):
-            if self.direction is not RIGHT:
-                self.direction = LEFT
+            if self.direction is not self.params.right:
+                self.direction = self.params.left
 
         elif pyxel.btn(pyxel.KEY_RIGHT) or pyxel.btn(pyxel.GAMEPAD1_BUTTON_DPAD_RIGHT):
-            if self.direction is not LEFT:
-                self.direction = RIGHT
+            if self.direction is not self.params.left:
+                self.direction = self.params.right
 
     def update_snake(self):
         """Move the snake based on the direction."""
 
         old_head = self.snake[0]
-        new_head = Point(old_head.x + self.direction.x, old_head.y + self.direction.y)
+        new_head = Point(old_head.x + self.direction.x,
+                         old_head.y + self.direction.y)
         self.snake.appendleft(new_head)
         self.popped_point = self.snake.pop()
 
@@ -140,15 +113,16 @@ class Snake:
 
         self.apple = self.snake[0]
         while self.apple in snake_pixels:
-            x = pyxel.rndi(0, WIDTH - 1)
-            y = pyxel.rndi(HEIGHT_SCORE + 1, HEIGHT - 1)
+            x = pyxel.rndi(0, self.params.width - 1)
+            y = pyxel.rndi(self.params.height_score +
+                           1, self.params.height - 1)
             self.apple = Point(x, y)
 
     def check_death(self):
         """Check whether the snake has died (out of bounds or doubled up.)"""
 
         head = self.snake[0]
-        if head.x < 0 or head.y < HEIGHT_SCORE or head.x >= WIDTH or head.y >= HEIGHT:
+        if head.x < 0 or head.y < self.params.height_score or head.x >= self.params.width or head.y >= self.params.height:
             self.death_event()
         elif len(self.snake) != len(set(self.snake)):
             self.death_event()
@@ -168,10 +142,10 @@ class Snake:
         """Draw the background, snake, score, and apple OR the end screen."""
 
         if not self.death:
-            pyxel.cls(col=COL_BACKGROUND)
+            pyxel.cls(col=self.params.col_background)
             self.draw_snake()
             self.draw_score()
-            pyxel.pset(self.apple.x, self.apple.y, col=COL_APPLE)
+            pyxel.pset(self.apple.x, self.apple.y, col=self.params.col_apple)
         else:
             self.draw_death()
 
@@ -180,30 +154,32 @@ class Snake:
 
         for i, point in enumerate(self.snake):
             if i == 0:
-                colour = COL_HEAD
+                colour = self.params.col_head
             else:
-                colour = COL_BODY
+                colour = self.params.col_body
             pyxel.pset(point.x, point.y, col=colour)
 
     def draw_score(self):
         """Draw the score at the top."""
 
         score = f"{self.score:04}"
-        pyxel.rect(0, 0, WIDTH, HEIGHT_SCORE, COL_SCORE_BACKGROUND)
-        pyxel.text(1, 1, score, COL_SCORE)
+        pyxel.rect(0, 0, self.params.width, self.params.height_score,
+                   self.params.col_score_background)
+        pyxel.text(1, 1, score, self.params.col_score)
 
     def draw_death(self):
         """Draw a blank screen with some text."""
 
-        pyxel.cls(col=COL_DEATH)
+        pyxel.cls(col=self.params.col_death)
 
-        display_text = TEXT_DEATH[:]
+        display_text = self.params.text_death[:]
         display_text.insert(1, f"{self.score:04}")
 
         for i, text in enumerate(display_text):
             y_offset = (pyxel.FONT_HEIGHT + 2) * i
-            text_x = self.center_text(text, WIDTH)
-            pyxel.text(text_x, HEIGHT_DEATH + y_offset, text, COL_TEXT_DEATH)
+            text_x = self.center_text(text, self.params.width)
+            pyxel.text(text_x, self.params.height_death +
+                       y_offset, text, self.params.col_text_death)
 
     @staticmethod
     def center_text(text, page_width, char_width=pyxel.FONT_WIDTH):
@@ -268,7 +244,8 @@ def define_sound_and_music():
         + "f1 f1 f1 f1 f1 f1 f1 f1 g1 g1 g1 g1 g1 g1 g1 g1"
     )
     harmony2 = (
-        ("f1" * 8 + "g1" * 8 + "a1" * 8 + ("c2" * 7 + "d2")) * 3 + "f1" * 16 + "g1" * 16
+        ("f1" * 8 + "g1" * 8 + "a1" * 8 + ("c2" * 7 + "d2")) *
+        3 + "f1" * 16 + "g1" * 16
     )
 
     pyxel.sounds[3].set(
@@ -283,4 +260,3 @@ def define_sound_and_music():
     )
 
     pyxel.musics[0].set([], [2], [3], [4])
-
