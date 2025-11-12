@@ -1,13 +1,14 @@
 [project]
 name = "beetus"
-version = "0.1.0"
+version = "0.1.1"
 description = "2D physio-generated platformer game."
 readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
     "pyxel>=2.5.10",
     "requests>=2.32.5",
-    "openapi-client>=0.1.0"
+    "openapi-client>=0.1.0",
+    "pfun-cma-model",
 ]
 
 [build-system]
@@ -16,3 +17,4 @@ build-backend = "hatchling.build"
 
 [tool.uv.sources]
 openapi-client = { path = "./pfun_cma_model_client", subdirectory = "./pfun_cma_model_client/openapi_client"}
+pfun-cma-model = { git = "https://github.com/pfun-health/pfun-cma-model.git" }
