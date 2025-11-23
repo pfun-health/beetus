@@ -1,13 +1,6 @@
 // Project tasks configuration. See https://zed.dev/docs/tasks for documentation.
 //
 [
-  {
-    "label": "Package and Play Game",
-    "command": "./scripts/package-game.sh && ./scripts/play-game.sh",
-    "shell": {
-      "program": "sh"
-    }
-  }
 ]
 // Example:
 // [

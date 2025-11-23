@@ -4,5 +4,5 @@
 // see the documentation: https://zed.dev/docs/configuring-zed#settings-files
 {
   "enable_language_server": true,
-  "language_servers": ["basedPyright"]
+  "language_servers": ["basedPyright"],
 }

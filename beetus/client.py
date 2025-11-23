@@ -10,17 +10,19 @@ class BeetusClient:
         self.configuration = openapi_client.Configuration(
             host="https://pfun-cma-model-446025415469.us-central1.run.app"
         )
+        self.api_client = None
 
     def __enter__(self):
         # Enter a context with an instance of the API client
-        with openapi_client.ApiClient(self.configuration) as api_client:
-            # Create an instance of the API class
-            api_instance = openapi_client.DefaultApi(api_client)
-            return api_instance
+        self.api_client = openapi_client.ApiClient(self.configuration)
+        # Create an instance of the API class
+        api_instance = openapi_client.DefaultApi(self.api_client)
+        return api_instance
 
     def __exit__(self, exc_type, exc_value, traceback):
         # Exit the context and close the API client
-        pass
+        if self.api_client:
+            self.api_client.close()
 
 
 def main():

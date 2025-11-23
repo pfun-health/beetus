@@ -2,16 +2,20 @@
 from dataclasses import dataclass
 from typing import List, Mapping
 
-
 @dataclass
-class MovingPlatform:
-    """Represents a moving platform piece."""
+class Piece:
+    """Represents a generic piece."""
     x: float
     y: float
-    dx: float = 0.0
-    dy: float = 0.0
     width: float = 10.0
     height: float = 10.0
+
+
+@dataclass
+class MovingPlatform(Piece):
+    """Represents a moving platform piece."""
+    dx: float = 0.0
+    dy: float = 0.0
 
 
 @dataclass
