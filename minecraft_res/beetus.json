@@ -1,0 +1,59 @@
+{
+	"format_version": "1.8.0",
+	"animations": {
+		"animation.beetus.base_pose": {
+			"loop": true,
+			"bones": {
+				"body": {
+					"rotation": ["-query.target_x_rotation", 0, 0],
+					"position": [0, -4, 0]
+				}
+			}
+		},
+		"animation.beetus.move": {
+			"loop": true,
+			"animation_length": 2.9,
+			"bones": {
+				"tail": {
+					"rotation": ["-5.0 * Math.cos(297.9380535 * query.anim_time) - 5.0", 0, 0]
+				},
+				"tailtip": {
+					"rotation": ["-5.0 * Math.cos(297.9380535 * query.anim_time) - 5.0", 0, 0]
+				},
+				"wing0": {
+					"rotation": [0, 0, "16.0 * Math.cos(148.9690267 * query.anim_time)"]
+				},
+				"wing1": {
+					"rotation": [0, 0, "-16.0 * Math.cos(148.9690267 * query.anim_time)"]
+				},
+				"wingtip0": {
+					"rotation": [0, 0, "16.0 * Math.cos(148.9690267 * query.anim_time)"]
+				},
+				"wingtip1": {
+					"rotation": [0, 0, "-16.0 * Math.cos(148.9690267 * query.anim_time)"]
+				},
+				"body": {
+					"position": {
+						"0.0": [0, 3, 0],
+						"0.5": {
+							"pre": [0, 13.5, -3.44],
+							"post": [0, 13.5, -3.44],
+							"lerp_mode": "catmullrom"
+						},
+						"1.2": [0, 2, -6.89],
+						"2.9": [0, 0, -16]
+					},
+					"scale": {
+						"0.0": [1, 1, 1],
+						"1.5": [1.1, 1, 1]
+					}
+				}
+			},
+			"sound_effects": {
+				"1.4": {
+					"effect": "flap"
+				}
+			}
+		}
+	}
+}
